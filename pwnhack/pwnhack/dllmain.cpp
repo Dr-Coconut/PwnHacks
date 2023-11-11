@@ -29,13 +29,14 @@ DWORD WINAPI HackThread(HMODULE hModule)
     std::cout << "  [Numpad 3] for infinite coins/items     [Toggle]\n";
     std::cout << "  [Numpad 4] for Teleport to Fire Spell\n";
     std::cout << "  [Numpad 5] for Teleport to Gun Shop\n";    
-    std::cout << "  [Numpad 6] for Speed Hack               [Toggle]\n";    
+    std::cout << "  [Numpad 6] for Speed Hack               [Toggle]\n";
+    std::cout << "  [Numpad 7] for Zero Damage              [Toggle]\n";
     
     DWORD procId = GetProcId(L"PwnAdventure3-Win32-Shipping.exe");
     uintptr_t procBase = (uintptr_t)GetModuleHandle(L"PwnAdventure3-Win32-Shipping.exe");
     uintptr_t moduleBase = GetModuleBaseAddress(procId, L"GameLogic.dll");   
 
-    bool bAmmo = false, bSpeed = false, bMana = false, bItems = false;
+    bool bAmmo = false, bSpeed = false, bMana = false, bItems = false, bDamage=false;
 
     while (true)
     {
@@ -137,6 +138,23 @@ DWORD WINAPI HackThread(HMODULE hModule)
                 // Original bytes D9 81 20 01 00 00
                 memory::patch((BYTE *)(speedHookAddress), (BYTE *)"\xD9\x81\x20\x01\x00\x00", speedHookLength);
                 //*(float *)memory::findAddr(procBase + 0x01900600, {0xAC, 0x3C, 0x438, 0x18, 0x3E0, 0x120}) = 200; // Default speed
+            }
+        }
+
+        // Zero Damage
+        if (GetAsyncKeyState(VK_NUMPAD7) & 1)
+        {
+            bDamage = !bDamage;
+
+            if (bDamage)
+            {
+                std::cout << "[+] Enabling zero damage\n";
+                memory::patch((BYTE*)(moduleBase + 0x51176), (BYTE*)"\x0F\x84\x9C\x00\x00\x00", 6);
+            }
+            else
+            {
+                std::cout << "[-] Disabling zero damage\n";
+                memory::patch((BYTE*)(moduleBase + 0x51176), (BYTE*)"\x0F\x85\x9C\x00\x00\x00", 6);
             }
         }
     }
