@@ -3,7 +3,7 @@ Hacks/Cheats for Pwnie Island with DLL injector
 
 Note:
 
-Injector(executable) must be in the same directory as 'pwnhack.dll'
+Injector(executable) must be in the same directory as 'pwnhack.dll'(pwnhack/debug)
 
 May be flagged as a threat, antivirus off
 
