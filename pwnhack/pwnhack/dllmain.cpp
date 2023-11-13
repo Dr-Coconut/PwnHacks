@@ -31,6 +31,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
     std::cout << "  [Numpad 5] for Teleport to Gun Shop\n";    
     std::cout << "  [Numpad 6] for Speed Hack               [Toggle]\n";
     std::cout << "  [Numpad 7] for Zero Damage              [Toggle]\n";
+    std::cout << "  [Numpad 8] Inject Chat(Type fire)\n";
     
     DWORD procId = GetProcId(L"PwnAdventure3-Win32-Shipping.exe");
     uintptr_t procBase = (uintptr_t)GetModuleHandle(L"PwnAdventure3-Win32-Shipping.exe");
@@ -155,6 +156,22 @@ DWORD WINAPI HackThread(HMODULE hModule)
             {
                 std::cout << "[-] Disabling zero damage\n";
                 memory::patch((BYTE*)(moduleBase + 0x51176), (BYTE*)"\x0F\x85\x9C\x00\x00\x00", 6);
+            }
+        }
+
+        if (GetAsyncKeyState(VK_NUMPAD8) & 1)
+        {
+            //Chat function address in GameLogic.dll
+            DWORD chatHookAddress = moduleBase + 0x551A0;
+            int chatHookLength = 8;
+
+            //address in real function to jump back to after our code
+            chatJmpBackAddr = chatHookAddress + chatHookLength;
+            std::cout << "[-] Hooking into chat function\n";
+            //our code, in hooks.cpp
+            if (memory::hook((void*)chatHookAddress, player_chat_injected, chatHookLength))
+            {
+                std::cout << "[+] Enabled chat hack\n";
             }
         }
     }
