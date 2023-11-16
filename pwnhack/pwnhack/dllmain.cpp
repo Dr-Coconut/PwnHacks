@@ -23,7 +23,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
     freopen_s(&f, "CONOUT$", "w", stdout);
 
     //Temporay, replace with our chat function later   
-    std::cout << "  [DELETE] to quit\n";   
+    std::cout << "  [DELETE] to quitt\n";   
     std::cout << "  [Numpad 1] for infinite mana            [Toggle]\n";
     std::cout << "  [Numpad 2] for Infinite Ammo            [Toggle]\n";
     std::cout << "  [Numpad 3] for infinite coins/items     [Toggle]\n";
@@ -32,12 +32,13 @@ DWORD WINAPI HackThread(HMODULE hModule)
     std::cout << "  [Numpad 6] for Speed Hack               [Toggle]\n";
     std::cout << "  [Numpad 7] for Zero Damage              [Toggle]\n";
     std::cout << "  [Numpad 8] Inject Chat(Type fire)\n";
+    std::cout << "  [Numpad 9] Add 500 coins\n";
     
     DWORD procId = GetProcId(L"PwnAdventure3-Win32-Shipping.exe");
     uintptr_t procBase = (uintptr_t)GetModuleHandle(L"PwnAdventure3-Win32-Shipping.exe");
     uintptr_t moduleBase = GetModuleBaseAddress(procId, L"GameLogic.dll");   
 
-    bool bAmmo = false, bSpeed = false, bMana = false, bItems = false, bDamage=false;
+    bool bAmmo = false, bSpeed = false, bMana = false, bItems = false, bDamage=false, bPistol=false;
 
     while (true)
     {
@@ -172,6 +173,52 @@ DWORD WINAPI HackThread(HMODULE hModule)
             if (memory::hook((void*)chatHookAddress, player_chat_injected, chatHookLength))
             {
                 std::cout << "[+] Enabled chat hack\n";
+            }
+        }
+
+        
+        if (GetAsyncKeyState(VK_NUMPAD9) & 1) {
+            //increase piston damage by 100
+            bPistol = !bPistol;
+            DWORD akSpread = moduleBase + 0x13A00;
+            DWORD akCooldown = moduleBase + 0x139E0;
+            int akCooldownReduceAmount = 6;
+            int spreadReduceAmount = 6;
+            if (bPistol)
+            {
+                std::cout << "[+] Enabling increased pistol damage\n";
+                memory::patch((BYTE*)(moduleBase + 0x13930), (BYTE*)"\xB8\xFF\x00\x00\x00", 5);
+                memory::patch((BYTE*)(moduleBase + 0x139F0), (BYTE*)"\xB8\xFF\xFF\x00\x00", 5);
+                
+                
+                //address in real function to jump back to after our code
+                akSpreadReduce = akSpread + spreadReduceAmount;
+                std::cout << "[-] Hooking into spread reduction method\n";
+                spread = 0.0f;
+                //our code, in hooks.cpp
+                if (memory::hook((void*)akSpread, bulletSpread, spreadReduceAmount))
+                {
+                    std::cout << "[+] Enabled spread hack\n";
+                }
+                    
+                //address in real function to jump back to after our code
+                akCooldownReduce = akCooldown + akCooldownReduceAmount;
+                std::cout << "[-] Hooking into cooldown reduction method\n";
+                cooldown = 0.0f;
+                //our code, in hooks.cpp
+                if (memory::hook((void*)akCooldown, cooldownReduce, akCooldownReduceAmount))
+                {
+                    std::cout << "[+] Enabled spread hack\n";
+                }
+                
+
+
+            }
+            else
+            {
+                std::cout << "[-] Disabling zero damage\n";
+                memory::patch((BYTE*)(moduleBase + 0x13930), (BYTE*)"\xB8\x0E\x00\x00\x00", 5);
+                //memory::patch((BYTE*)(moduleBase + 0x1DD6), (BYTE*)"\x0F\x57\xC0\x00\x00", 5);
             }
         }
     }
