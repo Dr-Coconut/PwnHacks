@@ -7,7 +7,7 @@
 #include "vector"
 
 //values from cheat engine
-void teleport(uintptr_t procBase, float x, float y, float z)
+void teleport(uintptr_t procBase, float x, float y, float z) // teleport to x,y,z
 {
     *(float *)memory::findAddr(procBase + 0x018FFDE4, {0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x90}) = x;
     *(float *)memory::findAddr(procBase + 0x018FFDE4, {0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x94}) = y;
@@ -34,9 +34,9 @@ DWORD WINAPI HackThread(HMODULE hModule)
     std::cout << "  [Numpad 8] Inject Chat(Type fire)\n";
     std::cout << "  [Numpad 9] Add 500 coins\n";
     
-    DWORD procId = GetProcId(L"PwnAdventure3-Win32-Shipping.exe");
-    uintptr_t procBase = (uintptr_t)GetModuleHandle(L"PwnAdventure3-Win32-Shipping.exe");
-    uintptr_t moduleBase = GetModuleBaseAddress(procId, L"GameLogic.dll");   
+    DWORD procId = GetProcId(L"PwnAdventure3-Win32-Shipping.exe"); //get process id
+    uintptr_t procBase = (uintptr_t)GetModuleHandle(L"PwnAdventure3-Win32-Shipping.exe"); //get process base address
+    uintptr_t moduleBase = GetModuleBaseAddress(procId, L"GameLogic.dll");   //get dll module base address
 
     bool bAmmo = false, bSpeed = false, bMana = false, bItems = false, bDamage=false, bPistol=false;
 
@@ -55,13 +55,13 @@ DWORD WINAPI HackThread(HMODULE hModule)
             {
                 std::cout << "[+] Enabling infinite mana\n";
                 //nop bytes which update mana
-                memory::nop((BYTE *)(moduleBase + 0x525C7), 6);
+                memory::nop((BYTE *)(moduleBase + 0x525C7), 6); //setting 6 bytes to nop
             }
             else
             {
                 std::cout << "[-] Disabling infinite mana\n";
                 //restore original bytes
-                memory::patch((BYTE *)(moduleBase + 0x525C7), (BYTE *)"\x89\x86\xbc\x00\x00\x00", 6);
+                memory::patch((BYTE *)(moduleBase + 0x525C7), (BYTE *)"\x89\x86\xbc\x00\x00\x00", 6); //setting 6 bytes to original
             }
         }
 
@@ -73,7 +73,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
             if (bAmmo)
             {
                 std::cout << "[+] Enabling infinite ammo\n";
-                memory::nop((BYTE *)(moduleBase + 0x52396), 3);
+                memory::nop((BYTE *)(moduleBase + 0x52396), 3); //setting 3 bytes to nop
             }
             else
             {
@@ -91,7 +91,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
             if (bItems)
             {
                 std::cout << "[+] Enabling infinite coins/items\n";
-                memory::nop((BYTE *)(moduleBase + 0x52217), 3);
+                memory::nop((BYTE *)(moduleBase + 0x52217), 3); //nop
             }
             else
             {
@@ -125,9 +125,9 @@ DWORD WINAPI HackThread(HMODULE hModule)
             if (bSpeed)
             {
                 //address in real function to jump back to after our code
-                speedJmpBackAddr = speedHookAddress + speedHookLength;
+                speedJmpBackAddr = speedHookAddress + speedHookLength; //address of the instruction to return to after our code
                 std::cout << "[-] Hooking into walking speed method\n";
-                walkSpeed = 2000.0f;
+                walkSpeed = 2000.0f; //custom speed
                 //our code, in hooks.cpp
                 if (memory::hook((void *)speedHookAddress, speedHook, speedHookLength))
                 {
@@ -151,7 +151,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
             if (bDamage)
             {
                 std::cout << "[+] Enabling zero damage\n";
-                memory::patch((BYTE*)(moduleBase + 0x51176), (BYTE*)"\x0F\x84\x9C\x00\x00\x00", 6);
+                memory::patch((BYTE*)(moduleBase + 0x51176), (BYTE*)"\x0F\x84\x9C\x00\x00\x00", 6); //setting 6 bytes that do damange to nop, \x00
             }
             else
             {
@@ -203,15 +203,15 @@ DWORD WINAPI HackThread(HMODULE hModule)
                     std::cout << "[+] Enabled spread hack\n";
                 }
                     
-                ////address in real function to jump back to after our code
-                //akCooldownReduce = akCooldown + akCooldownReduceAmount;
-                //std::cout << "[-] Hooking into cooldown reduction method\n";
-                //cooldown = 0.0f;
-                ////our code, in hooks.cpp
-                //if (memory::hook((void*)akCooldown, cooldownReduce, akCooldownReduceAmount))
-                //{
-                //    std::cout << "[+] Enabled spread hack\n";
-                //}
+                //address in real function to jump back to after our code
+                akcooldownreduce = akcooldown + akcooldownreduceamount;
+                std::cout << "[-] hooking into cooldown reduction method\n";
+                cooldown = 0.0f;
+                //our code, in hooks.cpp
+                if (memory::hook((void*)akcooldown, cooldownreduce, akcooldownreduceamount))
+                {
+                    std::cout << "[+] enabled spread hack\n";
+                }
 
                 //address in real function to jump back to after our code
                 fireCooldownReduce = fireCooldown + fireCooldownReduceAmount;
@@ -222,9 +222,6 @@ DWORD WINAPI HackThread(HMODULE hModule)
                 {
                     std::cout << "[+] Enabled spread hack\n";
                 }
-                
-
-
             }
             else
             {

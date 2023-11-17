@@ -7,13 +7,13 @@
 // This file contains the hooks that we want to overwrite
 
 
-DWORD speedJmpBackAddr;
-float walkSpeed;
+DWORD speedJmpBackAddr; // Address to jump back to after hooking
+float walkSpeed; // Our custom walk speed
 void __declspec(naked) speedHook()
 {
 	__asm {		
-			fld walkSpeed
-			jmp[speedJmpBackAddr] // Jump back to original code
+			fld walkSpeed // Load our custom walk speed
+			jmp[speedJmpBackAddr] // Jump back to the line after the original fld operation
 	}
 }
 
@@ -57,13 +57,11 @@ void teleport(uintptr_t procBase, float x, float y, float z);
 
 
 void addCoins(int amount) {
-	*(int*)memory::findAddr(moduleBase + 0x97D7C, { 0x1C, 0x6C, 0x4C, 0x0, 0X18 }) += amount;
-	//*(int*)memory::findAddr(moduleBase + 0x97D7C, { 0x1C, 0x6C, 0x4C, 0x8, 0X18 }) += amount;
-	//*(int*)memory::findAddr(moduleBase + 0x97D7C, { 0x1C, 0x6C, 0x4C, 0x4, 0X18 }) += amount;
+	*(int*)memory::findAddr(moduleBase + 0x97D7C, { 0x1C, 0x6C, 0x4C, 0x0, 0X18 }) += amount; // adding offsets to the base game dll address to find the address of the coins variable and adding the amount to it
 }
 
 
-void processInput(const std::string& input) {
+void processInput(const std::string& input) { //splitting the input into tokens/words
 	std::istringstream iss(input);
 	std::vector<std::string> tokens;
 	std::string token;
