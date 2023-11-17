@@ -38,6 +38,16 @@ void __declspec(naked) cooldownReduce()
 	}
 }
 
+DWORD fireCooldownReduce;
+float fcooldown;
+void __declspec(naked) fcooldownReduce()
+{
+	__asm {
+		movss xmm0, fcooldown
+		jmp[fireCooldownReduce] // Jump back to original code
+	}
+}
+
 
 DWORD procId = GetProcId(L"PwnAdventure3-Win32-Shipping.exe");
 uintptr_t procBase = (uintptr_t)GetModuleHandle(L"PwnAdventure3-Win32-Shipping.exe");
@@ -82,6 +92,25 @@ void processInput(const std::string& input) {
 	}
 	else {
 		std::cout << "input does not start with 'coins'." << std::endl;
+	}
+
+	if (!tokens.empty() && tokens[0] == "teleport") {
+		if (tokens.size() == 4) {
+			// extracting x, y, and z coordinates
+			float x, y, z;
+			std::istringstream(tokens[1]) >> x;
+			std::istringstream(tokens[2]) >> y;
+			std::istringstream(tokens[3]) >> z;
+
+			// call the teleport function with the extracted coordinates
+			teleport(procBase, x, y, z);
+		}
+		else {
+			std::cout << "Incorrect number of coordinates provided after 'teleport'. Use format: teleport x y z." << std::endl;
+		}
+	}
+	else {
+		std::cout << "Input does not start with 'teleport'." << std::endl;
 	}
 
 

@@ -182,6 +182,8 @@ DWORD WINAPI HackThread(HMODULE hModule)
             bPistol = !bPistol;
             DWORD akSpread = moduleBase + 0x13A00;
             DWORD akCooldown = moduleBase + 0x139E0;
+            DWORD fireCooldown = moduleBase + 0x5263A;
+            int fireCooldownReduceAmount = 5;
             int akCooldownReduceAmount = 6;
             int spreadReduceAmount = 6;
             if (bPistol)
@@ -201,12 +203,22 @@ DWORD WINAPI HackThread(HMODULE hModule)
                     std::cout << "[+] Enabled spread hack\n";
                 }
                     
+                ////address in real function to jump back to after our code
+                //akCooldownReduce = akCooldown + akCooldownReduceAmount;
+                //std::cout << "[-] Hooking into cooldown reduction method\n";
+                //cooldown = 0.0f;
+                ////our code, in hooks.cpp
+                //if (memory::hook((void*)akCooldown, cooldownReduce, akCooldownReduceAmount))
+                //{
+                //    std::cout << "[+] Enabled spread hack\n";
+                //}
+
                 //address in real function to jump back to after our code
-                akCooldownReduce = akCooldown + akCooldownReduceAmount;
+                fireCooldownReduce = fireCooldown + fireCooldownReduceAmount;
                 std::cout << "[-] Hooking into cooldown reduction method\n";
-                cooldown = 0.0f;
+                fcooldown = 0.0f;
                 //our code, in hooks.cpp
-                if (memory::hook((void*)akCooldown, cooldownReduce, akCooldownReduceAmount))
+                if (memory::hook((void*)fireCooldown, fcooldownReduce, fireCooldownReduceAmount))
                 {
                     std::cout << "[+] Enabled spread hack\n";
                 }
