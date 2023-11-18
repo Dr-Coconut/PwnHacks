@@ -41,11 +41,13 @@ DWORD WINAPI HackThread(HMODULE hModule)
 
 	bool bAmmo = false, bSpeed = false, bMana = false, bItems = false, bDamage = false, bPistol = false;
 
+
 	while (true)
 	{
 		// exit
 		if (GetAsyncKeyState(VK_DELETE) & 1)
 			break;
+
 
 		// Infinite mana NOP
 		if (GetAsyncKeyState(VK_NUMPAD1) & 1)
@@ -55,7 +57,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
 			if (bMana)
 			{
 				std::cout << "[+] Enabling infinite mana\n";
-				//nop bytes which update mana
+				//nop 6 bytes which update mana
 				nop((BYTE*)(moduleBase + 0x525C7), 6);
 			}
 			else
@@ -66,6 +68,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
 			}
 		}
 
+
 		// Infinite ammo NOP
 		if (GetAsyncKeyState(VK_NUMPAD2) & 1)
 		{
@@ -74,6 +77,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
 			if (bAmmo)
 			{
 				std::cout << "[+] Enabling infinite ammo\n";
+				//nop 3 bytes which update mana
 				nop((BYTE*)(moduleBase + 0x52396), 3);
 			}
 			else
@@ -101,6 +105,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
 			}
 		}
 
+
 		if (GetAsyncKeyState(VK_NUMPAD4) & 1)
 		{
 			// Teleport to the Fire Spell
@@ -115,6 +120,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
 			teleport(procBase, -37496.0f, -18540.0f, 2514.0f);
 		}
 
+
 		//Will add more waypoints
 
 		if (GetAsyncKeyState(VK_NUMPAD6) & 1)
@@ -128,7 +134,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
 				//address in real function to jump back to after our code
 				speedJmpBackAddr = speedHookAddress + speedHookLength;
 				std::cout << "[-] Hooking into walking speed method\n";
-				walkSpeed = 2000.0f;
+				walkSpeed = 2000.0f;//custom speed
 				//our code, in functions.cpp
 				if (hook((void*)speedHookAddress, speedHook, speedHookLength))
 				{
@@ -147,6 +153,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
 		if (GetAsyncKeyState(VK_NUMPAD7) & 1)
 		{
 			bDamage = !bDamage;
+
 
 			if (bDamage)
 			{
@@ -187,6 +194,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
 				{
 					std::cout << "[+] Enabled ak spread hack\n";
 				}
+
 
 				//address in real function to jump back to after our code
 				akCooldownJmpBackAddr = akCooldownHookAddress + akCooldownHookLength;

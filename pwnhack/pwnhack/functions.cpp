@@ -8,7 +8,7 @@ uintptr_t procBase = (uintptr_t)GetModuleHandle(L"PwnAdventure3-Win32-Shipping.e
 uintptr_t moduleBase = GetModuleBaseAddress(procId, L"GameLogic.dll");
 
 DWORD speedJmpBackAddr;
-float walkSpeed;
+float walkSpeed; // Our custom walk speed
 void __declspec(naked) speedHook()
 {
 	__asm {
@@ -23,7 +23,7 @@ void __declspec(naked) akSpread()
 {
 	__asm {
 		fld spread
-		jmp[akSpreadJmpBackAddr]
+		jmp[akSpreadJmpBackAddr] // Jump back to original code
 	}
 }
 
@@ -33,7 +33,7 @@ void __declspec(naked) akCooldown()
 {
 	__asm {
 		fld cooldown
-		jmp[akCooldownJmpBackAddr]
+		jmp[akCooldownJmpBackAddr] // Jump back to original code
 	}
 }
 
@@ -43,7 +43,7 @@ void __declspec(naked) itemCooldown()
 {
 	__asm {
 		movss xmm0, fcooldown
-		jmp[fCooldownJmpBackAddr]
+		jmp[fCooldownJmpBackAddr] // Jump back to original code
 	}
 }
 
@@ -75,11 +75,10 @@ void teleport(uintptr_t procBase, float x, float y, float z)
 
 void addCoins(int amount) {
 	*(int*)findAddr(moduleBase + 0x97D7C, { 0x1C, 0x6C, 0x4C, 0x0, 0X18 }) += amount;
-	//*(int*)findAddr(moduleBase + 0x97D7C, { 0x1C, 0x6C, 0x4C, 0x8, 0X18 }) += amount;
-	//*(int*)findAddr(moduleBase + 0x97D7C, { 0x1C, 0x6C, 0x4C, 0x4, 0X18 }) += amount;
+	// adding offsets to the base game dll address to find the address of the coins variable and adding the amount to it
 }
 
-void processInput(const std::string& input) {
+void processInput(const std::string& input) { //splitting the input into tokens/words
 	std::istringstream iss(input);
 	std::vector<std::string> tokens;
 	std::string token;
