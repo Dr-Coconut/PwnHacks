@@ -65,6 +65,7 @@ void __declspec(naked) player_chat_injected() {
 	}
 }
 
+
 //values from cheat engine
 void teleport(uintptr_t procBase, float x, float y, float z)
 {
@@ -76,6 +77,48 @@ void teleport(uintptr_t procBase, float x, float y, float z)
 void addCoins(int amount) {
 	*(int*)findAddr(moduleBase + 0x97D7C, { 0x1C, 0x6C, 0x4C, 0x0, 0X18 }) += amount;
 	// adding offsets to the base game dll address to find the address of the coins variable and adding the amount to it
+}
+
+bool make_execute_readwrite(BYTE* base, unsigned int size) {
+	DWORD oldProtect;
+	return VirtualProtect(base, size, PAGE_EXECUTE_READWRITE, &oldProtect) != 0;
+}
+
+void tp(const char* name) {
+	/*if (!make_execute_readwrite((BYTE*)procBase, 117000)) {
+		std::cout << "Fail" << std::endl;
+	}
+	if (!make_execute_readwrite((BYTE*)moduleBase, 60000)) {
+		std::cout << "Fail" << std::endl;
+	}*/
+	//	uintptr_t fn_tp = moduleBase + 0x54e50;
+	//	//char* player = (char*)myPlayer;	
+	//	Player* player = *(Player**)findAddr(moduleBase + 0x97D7C, { 0x1c,0x6c,0x0 });
+	//	char* gameworld = *(char**)(moduleBase + 0x97d7c);
+	//	char* testp = *(char**)myPlayer;
+	//	std::cout << "testp" << std::hex << testp << std::endl;
+	//	std::cout << "gameworld" << std::hex << gameworld << std::endl;
+	//	std::cout << "player" << std::hex << player << std::endl;
+	//	std::cout << "myPlayer" << std::hex << myPlayer << std::endl;
+	//
+	//	__asm {
+	//		/*mov eax, name
+	//		push eax
+	//		mov ecx, player
+	//		mov eax, fn_tp
+	//		call eax*/
+	//		mov ecx, player
+	//		mov edx, name
+	//		mov eax, fn_tp
+	//		call eax
+	//	}
+	//}
+	typedef void(__thiscall* _Tp)(void* player, const char* location);
+	_Tp Tp;
+
+	void* player = (void*)findAddr(moduleBase + 0x97D7C, { 0x1c,0x6c,0x0 });
+	Tp = (_Tp)(moduleBase + 0x54e50);
+	Tp(player, name);
 }
 
 void processInput(const std::string& input) { //splitting the input into tokens/words
@@ -92,7 +135,22 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		//hkghkj
 	}
 
-	if (!tokens.empty() && tokens[0] == "coins") {
+	else if (!tokens.empty() && tokens[0] == "tp" && tokens.size() == 2) {
+		const char* name = tokens[1].c_str();
+		std::cout << name;
+		tp(name);
+	   /*"Town"		
+		"PirateBay"
+		"GoldFarm"
+		"BallmerPeak"
+	    "UnbearableWoods"
+		"Sewer"
+		"LostCave"
+		"MoltenCave"*/
+
+	}
+
+	else if (!tokens.empty() && tokens[0] == "coins") {
 		if (tokens.size() > 1) {
 			// extracting the value after 'coins'
 			int amount;
@@ -105,11 +163,8 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			std::cout << "no value provided after 'coins'." << std::endl;
 		}
 	}
-	else {
-		std::cout << "input does not start with 'coins'." << std::endl;
-	}
 
-	if (!tokens.empty() && tokens[0] == "teleport") {
+	else if (!tokens.empty() && tokens[0] == "teleport") {
 		if (tokens.size() == 4) {
 			// extracting x, y, and z coordinates
 			float x, y, z;
