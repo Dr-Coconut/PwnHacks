@@ -247,15 +247,12 @@ DWORD WINAPI HackThread(HMODULE hModule)
 }
 
 //TO DO:
-//one tap
 //fly
 //spawn
-//add items
 //call other functions
 //relative teleport
 //more teleport locations
 //minigame
-//air jump
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD ul_reason_for_call,

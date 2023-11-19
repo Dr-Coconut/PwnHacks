@@ -121,6 +121,24 @@ void tp(const char* name) {
 	Tp(player, name);
 }
 
+void item(const char* name) {
+
+	typedef void* (__thiscall* _GetItemByName)(void* gamePtr, const char* name);
+	_GetItemByName GetItemByName;
+
+	typedef bool(__thiscall* _AddItem)(void* playervftblptr, void* IItemPtr, unsigned int count, bool allowPartial);
+	_AddItem AddItem;
+	void* player = (void*)findAddr(moduleBase + 0x97D7C, { 0x1c,0x6c,0x0 });
+	void* game = (void*)(moduleBase + 0x9780);
+	GetItemByName = (_GetItemByName)(moduleBase + 0x1DE20);
+	AddItem = (_AddItem)(moduleBase + 0x51BA0);
+	void* item = GetItemByName(game, name);
+	AddItem(player, item, 1, 0);
+	//GreatBallsOfFire
+	//HandCannon
+
+}
+
 void processInput(const std::string& input) { //splitting the input into tokens/words
 	std::istringstream iss(input);
 	std::vector<std::string> tokens;
@@ -178,6 +196,14 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		else {
 			std::cout << "Incorrect number of coordinates provided after 'teleport'. Use format: teleport x y z." << std::endl;
 		}
+	}
+
+	else if (!tokens.empty() && tokens[0] == "item") {
+		if (tokens.size() == 2) {
+			const char* name = tokens[1].c_str();
+			std::cout << name;
+			item(name);
+		}	
 	}
 	else {
 		std::cout << "Input does not start with 'teleport'." << std::endl;
