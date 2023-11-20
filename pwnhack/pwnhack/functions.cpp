@@ -74,6 +74,13 @@ void teleport(uintptr_t procBase, float x, float y, float z)
 	*(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x98 }) = z;
 }
 
+void rteleport(uintptr_t procBase, float x, float y, float z)
+{
+	*(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x90 }) += x;
+	*(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x94 }) += y;
+	*(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x98 }) += z;
+}
+
 void addCoins(int amount) {
 	*(int*)findAddr(moduleBase + 0x97D7C, { 0x1C, 0x6C, 0x4C, 0x0, 0X18 }) += amount;
 	// adding offsets to the base game dll address to find the address of the coins variable and adding the amount to it
@@ -192,6 +199,22 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 
 			// call the teleport function with the extracted coordinates
 			teleport(procBase, x, y, z);
+		}
+		else {
+			std::cout << "Incorrect number of coordinates provided after 'teleport'. Use format: teleport x y z." << std::endl;
+		}
+	}
+
+	else if (!tokens.empty() && tokens[0] == "rtp") {
+		if (tokens.size() == 4) {
+			// extracting x, y, and z coordinates
+			float x, y, z;
+			std::istringstream(tokens[1]) >> x;
+			std::istringstream(tokens[2]) >> y;
+			std::istringstream(tokens[3]) >> z;
+
+			// call the teleport function with the extracted coordinates
+			rteleport(procBase, x, y, z);
 		}
 		else {
 			std::cout << "Incorrect number of coordinates provided after 'teleport'. Use format: teleport x y z." << std::endl;
