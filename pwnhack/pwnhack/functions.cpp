@@ -1,7 +1,14 @@
 #include "pch.h"
-#include "libGameLogic.h"
 #include <string>
 #include <sstream>
+
+struct Vector3 {
+	float x, y, z;
+};
+
+struct Rotation {
+	float x, y, z;
+};
 
 DWORD procId = GetProcId(L"PwnAdventure3-Win32-Shipping.exe");
 uintptr_t procBase = (uintptr_t)GetModuleHandle(L"PwnAdventure3-Win32-Shipping.exe");
@@ -92,34 +99,7 @@ bool make_execute_readwrite(BYTE* base, unsigned int size) {
 }
 
 void tp(const char* name) {
-	/*if (!make_execute_readwrite((BYTE*)procBase, 117000)) {
-		std::cout << "Fail" << std::endl;
-	}
-	if (!make_execute_readwrite((BYTE*)moduleBase, 60000)) {
-		std::cout << "Fail" << std::endl;
-	}*/
-	//	uintptr_t fn_tp = moduleBase + 0x54e50;
-	//	//char* player = (char*)myPlayer;	
-	//	Player* player = *(Player**)findAddr(moduleBase + 0x97D7C, { 0x1c,0x6c,0x0 });
-	//	char* gameworld = *(char**)(moduleBase + 0x97d7c);
-	//	char* testp = *(char**)myPlayer;
-	//	std::cout << "testp" << std::hex << testp << std::endl;
-	//	std::cout << "gameworld" << std::hex << gameworld << std::endl;
-	//	std::cout << "player" << std::hex << player << std::endl;
-	//	std::cout << "myPlayer" << std::hex << myPlayer << std::endl;
-	//
-	//	__asm {
-	//		/*mov eax, name
-	//		push eax
-	//		mov ecx, player
-	//		mov eax, fn_tp
-	//		call eax*/
-	//		mov ecx, player
-	//		mov edx, name
-	//		mov eax, fn_tp
-	//		call eax
-	//	}
-	//}
+
 	typedef void(__thiscall* _Tp)(void* player, const char* location);
 	_Tp Tp;
 
@@ -208,7 +188,7 @@ void spawnActor(int name) {
 	spawnActor = (_spawnActor)(moduleBase + 0x630c0);
 	float x = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x90 });
 	float y = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x94 });
-	float z = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x98 }) + 500.0f;
+	float z = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x98 });
 
 	Vector3 pos = { x, y, z };
 	Rotation rot = { 0.0f, 0.0f, 0.0f };
@@ -225,8 +205,7 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 	}
 
 	if (!tokens.empty() && tokens[0] == "fire") {
-		teleport(procBase, -43644.0f, -56041.0f, 309.0f);
-		//hkghkj
+		teleport(procBase, -43640.0f, -56040.0f, 310.0f);
 	}
 	else if (!tokens.empty() && tokens[0] == "spawn") {
 		if (tokens[1] == "bear") {
@@ -267,19 +246,22 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		}
 
 	}
-	else if (!tokens.empty() && tokens[0] == "tp" && tokens.size() == 2) {
-		const char* name = tokens[1].c_str();
-		std::cout << name;
-		tp(name);
-	   /*"Town"		
-		"PirateBay"
-		"GoldFarm"
-		"BallmerPeak"
-	    "UnbearableWoods"
-		"Sewer"
-		"LostCave"
-		"MoltenCave"*/
-
+	else if (!tokens.empty() && tokens[0] == "tp") {
+		if (tokens.size() == 2) {
+			const char* name = tokens[1].c_str();			
+			tp(name);
+			/*"Town"
+			 "PirateBay"
+			 "GoldFarm"
+			 "BallmerPeak"
+			 "UnbearableWoods"
+			 "Sewer"
+			 "LostCave"
+			 "MoltenCave"*/
+		}
+		else {
+			std::cout << "no value provided after 'tp'." << std::endl;
+		}
 	}
 
 	else if (!tokens.empty() && tokens[0] == "coins") {
@@ -308,7 +290,7 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			teleport(procBase, x, y, z);
 		}
 		else {
-			std::cout << "Incorrect number of coordinates provided after 'teleport'. Use format: teleport x y z." << std::endl;
+			std::cout << "Incorrect number of coordinates provided after 'teleport'. Use format: teleport [x] [y] [z]." << std::endl;
 		}
 	}
 
@@ -324,19 +306,21 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			rteleport(procBase, x, y, z);
 		}
 		else {
-			std::cout << "Incorrect number of coordinates provided after 'teleport'. Use format: teleport x y z." << std::endl;
+			std::cout << "Incorrect number of coordinates provided after 'rtp'. Use format: rtp [x] [y] [z]." << std::endl;
 		}
 	}
 
 	else if (!tokens.empty() && tokens[0] == "item") {
 		if (tokens.size() == 2) {
-			const char* name = tokens[1].c_str();
-			std::cout << name;
+			const char* name = tokens[1].c_str();			
 			item(name);
-		}	
+		}
+		else {
+			std::cout << "no value provided after 'item'." << std::endl;
+		}
 	}
 	else {
-		std::cout << "Input does not start with 'teleport'." << std::endl;
+		std::cout << "Invalid Hack" << std::endl;
 	}
 
 }
