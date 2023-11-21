@@ -10,7 +10,7 @@ struct Rotation {
 	float x, y, z;
 };
 
-bool mana = false, ammo = false, items = false, speed = false, damage = false, ak = false;
+bool mana = false, ammo = false, items = false, speed = false, damage = false, ak = false, jump = false;
 
 DWORD procId = GetProcId(L"PwnAdventure3-Win32-Shipping.exe");
 uintptr_t procBase = (uintptr_t)GetModuleHandle(L"PwnAdventure3-Win32-Shipping.exe");
@@ -110,7 +110,7 @@ void tp(const char* name) {
 	Tp(player, name);
 }
 
-void item(const char* name) {
+void item(const char* name, unsigned int count) {
 
 	typedef void* (__thiscall* _GetItemByName)(void* gamePtr, const char* name);
 	_GetItemByName GetItemByName;
@@ -122,7 +122,7 @@ void item(const char* name) {
 	GetItemByName = (_GetItemByName)(moduleBase + 0x1DE20);
 	AddItem = (_AddItem)(moduleBase + 0x51BA0);
 	void* item = GetItemByName(game, name);
-	AddItem(player, item, 1, 0);
+	AddItem(player, item, count, 0);
 	//GreatBallsOfFire
 	//HandCannon
 
@@ -309,9 +309,11 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 	}
 
 	else if (!tokens.empty() && tokens[0] == "item") {
-		if (tokens.size() == 2) {
-			const char* name = tokens[1].c_str();			
-			item(name);
+		if (tokens.size() == 3) {
+			int numbers;
+			const char* name = tokens[1].c_str();
+			std::istringstream(tokens[2]) >> numbers;
+			item(name, numbers);
 		}
 		else {
 			std::cout << "no value provided after 'item'." << std::endl;
@@ -427,6 +429,21 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		std::cout << "z: " << z << "\n";
 
 	}
+
+	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "infinite" && tokens[1] == "jump") {
+		jump = !jump;
+		if (jump) {
+			std::cout << "[+] Enable Infinite Jumps\n";
+			nop((BYTE*)(moduleBase + 0x51680), 3);
+			nop((BYTE*)(moduleBase + 0x51685), 11);
+		}
+		else
+		{
+			std::cout << "[+] Disable infinite jumps\n";
+			patch((BYTE*)(moduleBase + 0x51680), (BYTE*)"\x8B\x49\x9C", 3);
+			patch((BYTE*)(moduleBase + 0x51685), (BYTE*)"\xC9\x74\x07\x8B\x01\x8B\x40\x50\xFF\xE0\x32", 11);
+		}
+		}
 
 	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "op" && tokens[1] == "ak") {
 		ak = !ak;
