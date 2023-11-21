@@ -182,7 +182,8 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 	while (iss >> token) {
 		tokens.push_back(token);
 	}
-
+  
+  //This function spawn any specfied object/enemy
 	if (!tokens.empty() && tokens[0] == "spawn") {
 		if (tokens[1] == "bear") {
 			spawnActor(0);
@@ -222,7 +223,8 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		}
 
 	}
-
+  
+  //This teleports to popular places in the game world
 	else if (!tokens.empty() && tokens[0] == "tp") {
 		if (tokens.size() == 4) {
 			// extracting x, y, and z coordinates
@@ -274,7 +276,8 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			std::cout << "Incorrect number of coordinates provided after 'tp'. Use format: teleport [name]." << std::endl;
 		}
 	}
-
+  
+  //Relative teleport, teleports to user inputted specific co-ordinates
 	else if (!tokens.empty() && tokens[0] == "rtp") {
 		if (tokens.size() == 4) {
 			// extracting x, y, and z coordinates
@@ -290,7 +293,8 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			std::cout << "Incorrect number of coordinates provided after 'rtp'. Use format: rtp [x] [y] [z]." << std::endl;
 		}
 	}
-
+  
+  //Adds user specified items to inventory
 	else if (!tokens.empty() && tokens[0] == "item") {
 		if (tokens.size() == 3) {
 			int numbers;
@@ -302,7 +306,7 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			std::cout << "no value provided after 'item'." << std::endl;
 		}
 	}
-
+  //Adds any number of coins user wants
 	else if (!tokens.empty() && tokens[0] == "addcoins") {
 		if (tokens.size() == 2) {
 			int numbers;
@@ -313,6 +317,8 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			std::cout << "no value provided after 'item'." << std::endl;
 		}
 	}
+
+  //Enables/disables infinte mana
 	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "infinite" && tokens[1] == "mana") {
 		mana = !mana;
 
@@ -329,7 +335,8 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			patch((BYTE*)(moduleBase + 0x525C7), (BYTE*)"\x89\x86\xbc\x00\x00\x00", 6);
 		}
 	}
-
+  
+  //Enables/disables infinite ammo.
 	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "infinite" && tokens[1] == "ammo") {
 		ammo = !ammo;
 
@@ -346,7 +353,8 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			patch((BYTE*)(moduleBase + 0x52396), (BYTE*)"\x89\x48\x1c", 3);
 		}
 	}
-
+  
+  //Makes all items in the shop "free"
 	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "infinite" && ((tokens[1] == "items") || (tokens[1] == "coins"))) {
 		items = !items;
 
@@ -361,7 +369,8 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			patch((BYTE*)(moduleBase + 0x52217), (BYTE*)"\x89\x48\x18", 3);
 		}
 	}
-
+  
+  //Increases walking speed
 	else if (!tokens.empty() && tokens.size() == 1 && tokens[0] == "speed") {
 		speed = !speed;
 		//GetWalkingSpeed function address in GameLogic.dll
@@ -387,6 +396,7 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		}
 	}
 
+  //Makes actor take zero damage
 	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "zero" && tokens[1] == "dmg") {
 		damage = !damage;
 		if (damage)
@@ -402,16 +412,19 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			patch((BYTE*)(moduleBase + 0x51176), (BYTE*)"\x0F\x85\x9C\x00\x00\x00", 6);
 		}
 	}
-
+  
+  //Set health to a specified amount
 	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "sethealth") {
 		unsigned int last = 0xbc - 0xfc;
 		*(int*)findAddr(moduleBase + 0x97d7c, { 0x1c, 0x6c,last }) = std::stoi(tokens[1]);
 	}
 
+  //Set mana to a specified amount
 	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "setmana") {
 		*(int*)findAddr(moduleBase + 0x97d7c, { 0x1c, 0x6c,0xbc }) = std::stoi(tokens[1]);
 	}
-
+  
+  //Printing current coordinates of actor
 	else if (!tokens.empty() && tokens.size() == 1 && tokens[0] == "coords") {
 		float x = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x90 });
 		float y = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x94 });
@@ -422,6 +435,7 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		std::cout << "z: " << z << "\n";
 	}
 
+  //Enables actor to jump infinitely within the game world
 	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "infinite" && tokens[1] == "jump") {
 		jump = !jump;
 		if (jump) {
@@ -436,7 +450,8 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			patch((BYTE*)(moduleBase + 0x51685), (BYTE*)"\xC9\x74\x07\x8B\x01\x8B\x40\x50\xFF\xE0\x32", 11);
 		}
 	}
-
+  
+  //Zero cooldown, increased damage and zero bullet spread for AK
 	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "op" && tokens[1] == "ak") {
 		ak = !ak;
 		DWORD akSpreadHookAddress = moduleBase + 0x13A00;
@@ -472,7 +487,7 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		}
 		else
 		{
-			//disable all
+			//disable all hacks
 			std::cout << "[-] Disabling hacks\n";
 			patch((BYTE*)(moduleBase + 0x139F0), (BYTE*)"\xB8\x0B\x00\x00\x00", 5);
 			patch((BYTE*)(moduleBase + 0x13A00), (BYTE*)"\xD9\x05\x20\x8B\x07\x10", akSpreadHookLength);
@@ -480,6 +495,7 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 
 		}
 	}
+  //Enables zero cooldown for all relevant items
 	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "zero" && tokens[1] == "cd") {
 		zc = !zc;
 		DWORD fCooldownHookAddress = moduleBase + 0x5263A;
@@ -504,6 +520,7 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 	}
 }
 
+//Gets user input from chat
 void our_player_chat(char* msg, char* player) {
 	std::string str(msg);
 	processInput(str);
