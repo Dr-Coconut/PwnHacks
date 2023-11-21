@@ -407,6 +407,16 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		}
 	}
 
+	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "setmana") {
+		unsigned int last = 0xbc - 0xfc;
+		*(int*)findAddr(moduleBase + 0x97d7c, { 0x1c, 0x6c,last }) = std::stoi(tokens[1]);
+		}
+
+	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "sethealth") {		
+		*(int*)findAddr(moduleBase + 0x97d7c, { 0x1c, 0x6c,0xbc })= std::stoi(tokens[1]);
+	}
+	
+
 	else if (!tokens.empty() && tokens.size() == 1 && tokens[0] == "coords") {
 		float x = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x90 });
 		float y = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x94 });
