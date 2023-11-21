@@ -2,7 +2,12 @@
 #include "libGameLogic.h"
 #include <string>
 #include <sstream>
-
+struct Vector3 {
+	float x, y, z;
+};
+struct Rotation {
+	float x, y, z;
+};
 DWORD procId = GetProcId(L"PwnAdventure3-Win32-Shipping.exe");
 uintptr_t procBase = (uintptr_t)GetModuleHandle(L"PwnAdventure3-Win32-Shipping.exe");
 uintptr_t moduleBase = GetModuleBaseAddress(procId, L"GameLogic.dll");
