@@ -34,7 +34,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
 	//address in real function to jump back to after our code
 	chatJmpBackAddr = chatHookAddress + chatHookLength;
 	//our code, in functions.cpp
-	if (hook((void*)chatHookAddress, player_chat_injected, chatHookLength))
+	if (hook((void*)chatHookAddress, player_chat, chatHookLength))
 	{
 		std::cout << "[+] Enabled chat hack\n";
 	}
@@ -182,7 +182,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
 			{
 				std::cout << "[+] Enabling increased ak damage\n";
 				//patch((BYTE*)(moduleBase + 0x13930), (BYTE*)"\xB8\xFF\x00\x00\x00", 5);
-				patch((BYTE*)(moduleBase + 0x139F0), (BYTE*)"\xB8\xFF\xFF\xFF\xFF", 5);
+				patch((BYTE*)(moduleBase + 0x139F0), (BYTE*)"\xB8\xFF\xFF\x00\x00", 5);
 
 
 				//address in real function to jump back to after our code
