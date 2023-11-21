@@ -145,7 +145,76 @@ void item(const char* name) {
 	//HandCannon
 
 }
+void spawnActor(int name) {
+	//const char* name
+	typedef void* (__thiscall* _getActor)(void* actorObj);
+	_getActor getActor;
+	
+	//if (name == "bear") {
+	//	void* act = (void*)(moduleBase + 0x73fdc);
+	//	getActor = (_getActor)(moduleBase + 0x22400);
+	//	} 
+	void* act = (void*)(moduleBase + 0x73fdc);
+	getActor = (_getActor)(moduleBase + 0x22400);
+	if (name == 1) {
+		void* act = (void*)(moduleBase + 0x72fa4);
+		getActor = (_getActor)(moduleBase + 0x222b0);
+	}
+	else if (name == 2) {
+		void* act = (void*)(moduleBase + 0x71d78);
+		getActor = (_getActor)(moduleBase + 0x22160);
+	}
+	else if (name == 3) {
+		void* act = (void*)(moduleBase + 0x74158);
+		getActor = (_getActor)(moduleBase + 0x225c0);
+	}
+	else if (name == 4) {
+		void* act = (void*)(moduleBase + 0x7423c);
+		getActor = (_getActor)(moduleBase + 0x221d0);
+	}
+	else if (name == 5) {
+		void* act = (void*)(moduleBase + 0x73b80);
+		getActor = (_getActor)(moduleBase + 0x22240);
+	}
+	else if (name == 6) {
+		void* act = (void*)(moduleBase + 0x72654);
+		getActor = (_getActor)(moduleBase + 0x22320);
+	}
+	else if (name == 7) {
+		void* act = (void*)(moduleBase + 0x1a130);
+		getActor = (_getActor)(moduleBase + 0x22390);
+	}
+	else if (name == 8) {
+		void* act = (void*)(moduleBase + 0x73e80);
+		getActor = (_getActor)(moduleBase + 0x22470);
+	}
+	else if (name == 9) {
+		void* act = (void*)(moduleBase + 0x7262c);
+		getActor = (_getActor)(moduleBase + 0x224e0);
+	}
+	else if (name == 10) {
+		void* act = (void*)(moduleBase + 0x73b90);
+		getActor = (_getActor)(moduleBase + 0x22550);
+	}
 
+
+	void* actor = getActor(act);
+
+	typedef void(__thiscall* _spawnActor)(void* world, unsigned int id, void* actor, const Vector3* pos, const Rotation* rot);
+	_spawnActor spawnActor;
+
+	void* world = (void*)(moduleBase + 0x97D7C);
+
+	spawnActor = (_spawnActor)(moduleBase + 0x630c0);
+	float x = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x90 });
+	float y = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x94 });
+	float z = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x98 }) + 500.0f;
+
+	Vector3 pos = { x, y, z };
+	Rotation rot = { 0.0f, 0.0f, 0.0f };
+	spawnActor(world, 1, actor, &pos, &rot);
+
+}
 void processInput(const std::string& input) { //splitting the input into tokens/words
 	std::istringstream iss(input);
 	std::vector<std::string> tokens;
@@ -159,7 +228,45 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		teleport(procBase, -43644.0f, -56041.0f, 309.0f);
 		//hkghkj
 	}
+	else if (!tokens.empty() && tokens[0] == "spawn") {
+		if (tokens[1] == "bear") {
+			spawnActor(0);
+		}
+		else if (tokens[1] == "giantrat") {
+			spawnActor(1);
+		}
+		else if (tokens[1] == "justintolerable"){
+			spawnActor(2);
+		}
+		else if (tokens[1] == "magmarok") {
+			spawnActor(3);
+		}
+		else if (tokens[1] == "farmer") {
+			spawnActor(4);
+		}
+		else if (tokens[1] == "michaelangelo") {
+			spawnActor(5);
+		}
+		else if (tokens[1] == "cavespider") {
+			spawnActor(6);
+		}
+		else if (tokens[1] == "icespiderqueen") {
+			spawnActor(7);
+		}
+		else if (tokens[1] == "angrybear") {
+			spawnActor(8);
+		}
+		else if (tokens[1] == "madcow") {
+			spawnActor(9);
+		}
+		else if (tokens[1] == "cowking") {
+			spawnActor(10);
+		}
+		else {
+			std::cout << "Invalid actor name. Ensure it is in 1 word in lower case e.g. 'cowking'." << std::endl;
+		}
 
+	}
 	else if (!tokens.empty() && tokens[0] == "tp" && tokens.size() == 2) {
 		const char* name = tokens[1].c_str();
 		std::cout << name;
