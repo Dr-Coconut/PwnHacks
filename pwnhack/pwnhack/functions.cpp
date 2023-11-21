@@ -10,7 +10,7 @@ struct Rotation {
 	float x, y, z;
 };
 
-bool mana = false, ammo = false, items = false, speed = false, damage = false, ak = false, jump = false;
+bool mana = false, ammo = false, items = false, speed = false, damage = false, ak = false, jump = false, zc = false;
 
 DWORD procId = GetProcId(L"PwnAdventure3-Win32-Shipping.exe");
 uintptr_t procBase = (uintptr_t)GetModuleHandle(L"PwnAdventure3-Win32-Shipping.exe");
@@ -74,7 +74,6 @@ void __declspec(naked) player_chat() {
 	}
 }
 
-
 //values from cheat engine(player position coordinates)
 void teleport(uintptr_t procBase, float x, float y, float z)
 {
@@ -88,26 +87,6 @@ void rteleport(uintptr_t procBase, float x, float y, float z)
 	*(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x90 }) += x;
 	*(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x94 }) += y;
 	*(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x98 }) += z;
-}
-
-//void addCoins(int amount) {
-//	*(int*)findAddr(moduleBase + 0x97D7C, { 0x1C, 0x6C, 0x4C, 0x0, 0X18 }) += amount;
-//	// adding offsets to the base game dll address to find the address of the coins variable and adding the amount to it
-//}
-
-//bool make_execute_readwrite(BYTE* base, unsigned int size) {
-//	DWORD oldProtect;
-//	return VirtualProtect(base, size, PAGE_EXECUTE_READWRITE, &oldProtect) != 0;
-//}
-
-void tp(const char* name) {
-
-	typedef void(__thiscall* _Tp)(void* player, const char* location);
-	_Tp Tp;
-
-	void* player = (void*)findAddr(moduleBase + 0x97D7C, { 0x1c,0x6c,0x0 });
-	Tp = (_Tp)(moduleBase + 0x54e50);
-	Tp(player, name);
 }
 
 void item(const char* name, unsigned int count) {
@@ -128,12 +107,15 @@ void item(const char* name, unsigned int count) {
 
 }
 void spawnActor(int name) {
-	
+
 	typedef void* (__thiscall* _getActor)(void* actorObj);
 	_getActor getActor;
-	
 	void* act = (void*)(moduleBase + 0x73fdc);
 	getActor = (_getActor)(moduleBase + 0x22400);
+	if (name == 0) {
+		void* act = (void*)(moduleBase + 0x73fdc);
+		getActor = (_getActor)(moduleBase + 0x22400);
+	}
 	if (name == 1) {
 		void* act = (void*)(moduleBase + 0x72fa4);
 		getActor = (_getActor)(moduleBase + 0x222b0);
@@ -175,7 +157,6 @@ void spawnActor(int name) {
 		getActor = (_getActor)(moduleBase + 0x22550);
 	}
 
-
 	void* actor = getActor(act);
 
 	typedef void(__thiscall* _spawnActor)(void* world, unsigned int id, void* actor, const Vector3* pos, const Rotation* rot);
@@ -184,9 +165,9 @@ void spawnActor(int name) {
 	void* world = (void*)(moduleBase + 0x97D7C);
 
 	spawnActor = (_spawnActor)(moduleBase + 0x630c0);
-	float x = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x90 })+200.0f;
+	float x = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x90 }) + 200.0f;
 	float y = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x94 });
-	float z = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x98 })+500.0f;
+	float z = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x98 }) + 500.0f;
 
 	Vector3 pos = { x, y, z };
 	Rotation rot = { 0.0f, 0.0f, 0.0f };
@@ -202,9 +183,6 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		tokens.push_back(token);
 	}
 
-	/*if (!tokens.empty() && tokens[0] == "fire") {
-		teleport(procBase, -43640.0f, -56040.0f, 310.0f);
-	}*/
 	if (!tokens.empty() && tokens[0] == "spawn") {
 		if (tokens[1] == "bear") {
 			spawnActor(0);
@@ -212,7 +190,7 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		else if (tokens[1] == "giantrat") {
 			spawnActor(1);
 		}
-		else if (tokens[1] == "justintolerable"){
+		else if (tokens[1] == "justintolerable") {
 			spawnActor(2);
 		}
 		else if (tokens[1] == "magmarok") {
@@ -244,39 +222,8 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		}
 
 	}
+
 	else if (!tokens.empty() && tokens[0] == "tp") {
-		if (tokens.size() == 2) {
-			const char* name = tokens[1].c_str();			
-			tp(name);
-			/*"Town"
-			 "PirateBay"
-			 "GoldFarm"
-			 "BallmerPeak"
-			 "UnbearableWoods"
-			 "Sewer"
-			 "LostCave"
-			 "MoltenCave"*/
-		}
-		else {
-			std::cout << "no value provided after 'tp'." << std::endl;
-		}
-	}
-
-	//else if (!tokens.empty() && tokens[0] == "coins") {
-	//	if (tokens.size() > 1) {
-	//		// extracting the value after 'coins'
-	//		int amount;
-	//		std::istringstream(tokens[1]) >> amount;
-
-	//		// call function to add coins with the extracted amount
-	//		addCoins(amount);
-	//	}
-	//	else {
-	//		std::cout << "no value provided after 'coins'." << std::endl;
-	//	}
-	//}
-
-	else if (!tokens.empty() && tokens[0] == "teleport") {
 		if (tokens.size() == 4) {
 			// extracting x, y, and z coordinates
 			float x, y, z;
@@ -288,7 +235,43 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			teleport(procBase, x, y, z);
 		}
 		else {
-			std::cout << "Incorrect number of coordinates provided after 'teleport'. Use format: teleport [x] [y] [z]." << std::endl;
+			std::cout << "Incorrect number of coordinates provided after 'tp'. Use format: teleport [x] [y] [z]." << std::endl;
+		}
+		if (tokens.size() == 2) {
+			if (tokens[1] == "PirateBay") {
+				teleport(procBase, 41471.8f, 58635.4f, 210.174f);
+			}
+			else if (tokens[1] == "GoldFarm") {
+				teleport(procBase, 16674.6f, 42136.9f, 2344.66f);
+			}
+			else if (tokens[1] == "BallmerPeak") {
+				teleport(procBase, -8483.77f, -10524.7f, 9518.02f);
+			}
+			else if (tokens[1] == "Sewer") {
+				teleport(procBase, -44459.6f, -35427.0f, 1203.13f);
+			}
+			else if (tokens[1] == "LostCave") {
+				teleport(procBase, -53498.9f, -40994.1f, 810.7f);
+			}
+			else if (tokens[1] == "MoltenCave") {
+				teleport(procBase, 45980.3f, 5935.02f, 379.404f);
+			}
+			else if (tokens[1] == "FortBlox") {
+				teleport(procBase, -20014.9f, -4237.29f, 2275.11f);
+			}
+			else if (tokens[1] == "FireSpell") {
+				teleport(procBase, -43650.0f, -56050.0f, 310.0f);
+			}
+			else if (tokens[1] == "GunShop") {
+				teleport(procBase, -37496.0f, -18540.0f, 2514.0f);
+			}
+			else {
+				std::cout << "Invalid location name\n";
+			}
+
+		}
+		else {
+			std::cout << "Incorrect number of coordinates provided after 'tp'. Use format: teleport [name]." << std::endl;
 		}
 	}
 
@@ -319,7 +302,18 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			std::cout << "no value provided after 'item'." << std::endl;
 		}
 	}
-	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "infinite" && tokens[1]=="mana") {
+
+	else if (!tokens.empty() && tokens[0] == "addcoins") {
+		if (tokens.size() == 2) {
+			int numbers;
+			std::istringstream(tokens[1]) >> numbers;
+			item("Coin", numbers);
+		}
+		else {
+			std::cout << "no value provided after 'item'." << std::endl;
+		}
+	}
+	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "infinite" && tokens[1] == "mana") {
 		mana = !mana;
 
 		if (mana)
@@ -353,7 +347,7 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		}
 	}
 
-	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "infinite" && ((tokens[1] == "items") ||(tokens[1]=="coins")) ){
+	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "infinite" && ((tokens[1] == "items") || (tokens[1] == "coins"))) {
 		items = !items;
 
 		if (items)
@@ -393,7 +387,7 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		}
 	}
 
-	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "zero" && tokens[1]=="damage") {
+	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "zero" && tokens[1] == "dmg") {
 		damage = !damage;
 		if (damage)
 		{
@@ -409,15 +403,14 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		}
 	}
 
-	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "setmana") {
+	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "sethealth") {
 		unsigned int last = 0xbc - 0xfc;
 		*(int*)findAddr(moduleBase + 0x97d7c, { 0x1c, 0x6c,last }) = std::stoi(tokens[1]);
-		}
-
-	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "sethealth") {		
-		*(int*)findAddr(moduleBase + 0x97d7c, { 0x1c, 0x6c,0xbc })= std::stoi(tokens[1]);
 	}
-	
+
+	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "setmana") {
+		*(int*)findAddr(moduleBase + 0x97d7c, { 0x1c, 0x6c,0xbc }) = std::stoi(tokens[1]);
+	}
 
 	else if (!tokens.empty() && tokens.size() == 1 && tokens[0] == "coords") {
 		float x = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x90 });
@@ -427,7 +420,6 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		std::cout << "x: " << x << "\n";
 		std::cout << "y: " << y << "\n";
 		std::cout << "z: " << z << "\n";
-
 	}
 
 	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "infinite" && tokens[1] == "jump") {
@@ -443,14 +435,13 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			patch((BYTE*)(moduleBase + 0x51680), (BYTE*)"\x8B\x49\x9C", 3);
 			patch((BYTE*)(moduleBase + 0x51685), (BYTE*)"\xC9\x74\x07\x8B\x01\x8B\x40\x50\xFF\xE0\x32", 11);
 		}
-		}
+	}
 
 	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "op" && tokens[1] == "ak") {
 		ak = !ak;
 		DWORD akSpreadHookAddress = moduleBase + 0x13A00;
 		DWORD akCooldownHookAddress = moduleBase + 0x139E0;
-		DWORD fCooldownHookAddress = moduleBase + 0x5263A;
-		int fCooldownHookLength = 5;
+
 		int akCooldownHookLength = 6;
 		int akSpreadHookLength = 6;
 		if (ak)
@@ -458,7 +449,6 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			std::cout << "[+] Enabling increased ak damage\n";
 			//patch((BYTE*)(moduleBase + 0x13930), (BYTE*)"\xB8\xFF\x00\x00\x00", 5);
 			patch((BYTE*)(moduleBase + 0x139F0), (BYTE*)"\xB8\xFF\xFF\x00\x00", 5);
-
 
 			//address in real function to jump back to after our code
 			akSpreadJmpBackAddr = akSpreadHookAddress + akSpreadHookLength;
@@ -470,7 +460,6 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 				std::cout << "[+] Enabled ak spread hack\n";
 			}
 
-
 			//address in real function to jump back to after our code
 			akCooldownJmpBackAddr = akCooldownHookAddress + akCooldownHookLength;
 			std::cout << "[-] Hooking into ak cooldown method\n";
@@ -480,7 +469,22 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			{
 				std::cout << "[+] Enabled ak cooldown hack\n";
 			}
+		}
+		else
+		{
+			//disable all
+			std::cout << "[-] Disabling hacks\n";
+			patch((BYTE*)(moduleBase + 0x139F0), (BYTE*)"\xB8\x0B\x00\x00\x00", 5);
+			patch((BYTE*)(moduleBase + 0x13A00), (BYTE*)"\xD9\x05\x20\x8B\x07\x10", akSpreadHookLength);
+			patch((BYTE*)(moduleBase + 0x139E0), (BYTE*)"\xD9\x05\xF0\x8A\x07\x10", akCooldownHookLength);
 
+		}
+	}
+	else if (!tokens.empty() && tokens.size() == 2 && tokens[0] == "zero" && tokens[1] == "cd") {
+		zc = !zc;
+		DWORD fCooldownHookAddress = moduleBase + 0x5263A;
+		int fCooldownHookLength = 5;
+		if (zc) {
 			//address in real function to jump back to after our code
 			fCooldownJmpBackAddr = fCooldownHookAddress + fCooldownHookLength;
 			std::cout << "[-] Hooking into item cooldown method\n";
@@ -490,22 +494,14 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 			{
 				std::cout << "[+] Enabled item cooldown hack\n";
 			}
-
 		}
-		else
-		{
-			//disable all
-			std::cout << "[-] Disabling hacks\n";
-			patch((BYTE*)(moduleBase + 0x139F0), (BYTE*)"\xB8\x0B\x00\x00\x00", 5);
-			patch((BYTE*)(moduleBase + 0x13A00), (BYTE*)"\xD9\x05\x20\x8B\x07\x10", akSpreadHookLength);
-			patch((BYTE*)(moduleBase + 0x139E0), (BYTE*)"\xD9\x05\xF0\x8A\x07\x10", akCooldownHookLength);
+		else {
 			patch((BYTE*)(moduleBase + 0x5263A), (BYTE*)"\xF3\x0F\x10\x45\x0C", fCooldownHookLength);
 		}
 	}
 	else {
 		std::cout << "Invalid Hack" << std::endl;
 	}
-
 }
 
 void our_player_chat(char* msg, char* player) {
