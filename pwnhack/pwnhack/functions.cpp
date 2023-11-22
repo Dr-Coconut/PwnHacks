@@ -156,6 +156,10 @@ void spawnActor(int name) {
 		void* act = (void*)(moduleBase + 0x73b90);
 		getActor = (_getActor)(moduleBase + 0x22550);
 	}
+	else if (name == -1) {
+		void* bear = (void*)(moduleBase + 0x72ec0);
+		getActor = (_getActor)(moduleBase + 0x21980);
+	}
 
 	void* actor = getActor(act);
 
@@ -165,14 +169,93 @@ void spawnActor(int name) {
 	void* world = (void*)(moduleBase + 0x97D7C);
 
 	spawnActor = (_spawnActor)(moduleBase + 0x630c0);
-	float x = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x90 }) + 200.0f;
-	float y = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x94 });
-	float z = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x98 }) + 500.0f;
+	if (name == -1) {
+		float playerX = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x90 });
+		float playerY = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x94 });
+		float playerZ = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x98 });
 
-	Vector3 pos = { x, y, z };
-	Rotation rot = { 0.0f, 0.0f, 0.0f };
-	spawnActor(world, 1, actor, &pos, &rot);
+		const float circleRadius = 2500.0f;
+		const int numBears = 50;
+		const float angleIncrement = 360.0f / numBears;
+		const float heightIncrement = 200.0f;
+		const int numHeightLevels = 12;
+		for (int h = -5; h < numHeightLevels; ++h) {
+			float currentHeight = playerZ + h * heightIncrement;
 
+			for (int i = 0; i < numBears; ++i) {
+				float angle = i * angleIncrement;
+				float x = playerX + circleRadius * cos(angle * (3.14159265f / 180.0f));
+				float y = playerY + circleRadius * sin(angle * (3.14159265f / 180.0f));
+				float z = currentHeight;
+
+				Vector3 pos = { x, y, z };
+				Rotation rot = { 0.0f, 0.0f, 0.0f };
+				spawnActor(world, i + 1 + h * numBears, actor, &pos, &rot);
+			}
+		}
+	}
+	else {
+		float x = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x90 }) + 200.0f;
+		float y = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x94 });
+		float z = *(float*)findAddr(procBase + 0x018FFDE4, { 0x4, 0x4, 0x1D4, 0x408, 0x24C, 0x180, 0x98 }) + 500.0f;
+
+		Vector3 pos = { x, y, z };
+		Rotation rot = { 0.0f, 0.0f, 0.0f };
+		spawnActor(world, 1, actor, &pos, &rot);
+	}
+
+}
+int count = 0;
+bool initialSpawned = false;
+
+void initialSpawn() {
+	int ids[] = { 0, 1, 6, 7, 8, 9, 10 };
+	for (int i = 0; i < 9; ++i) {
+		int id = ids[rand() % 7];
+		spawnActor(id);
+	}
+}
+
+void spawning() {
+	if (!initialSpawned) {
+		initialSpawn();
+		initialSpawned = true;
+	}
+
+	int ids[] = { 0, 1, 6, 7, 8, 9, 10 };
+	int id = ids[rand() % 7];
+	spawnActor(id);
+}
+
+void processInput(const std::string& input);
+void counter() {
+	if (count == 20) {
+		count = -1;
+		item("CharStar", 1);
+		item("AKRifle", 1);
+		item("RifleAmmo", 500);
+		processInput("op ak");
+		processInput("infinite mana");
+		processInput("infinite ammo");
+		processInput("speed");
+		patch((BYTE*)(moduleBase + 0x1068d), (BYTE*)"\x8b\x40\x0c\xff\xd0", 5);
+		initialSpawned = false;
+	}
+	count++;
+	std::cout << count;
+}
+
+DWORD onKillJmpBackAddr;
+void __declspec(naked) onKill()
+{
+
+	__asm {
+		call counter
+		call spawning
+		mov eax, [eax + 0x0C]
+		call eax
+		jmp[onKillJmpBackAddr]
+	}
 }
 void processInput(const std::string& input) { //splitting the input into tokens/words
 	std::istringstream iss(input);
@@ -223,7 +306,30 @@ void processInput(const std::string& input) { //splitting the input into tokens/
 		}
 
 	}
-  
+
+	else if (!tokens.empty() && tokens.size() == 1 && tokens[0] == "battle") {
+		teleport(procBase, -12534.9f, -37753.1f, 2733.55f);
+		spawnActor(-1);
+		spawnActor(1);
+		spawnActor(3);
+		mana = false;
+		ammo = false;
+		speed = false;
+		processInput("speed");
+		processInput("infinite mana");
+		processInput("infinite ammo");
+		processInput("item StaticLink 1");
+		DWORD onKillAddress = moduleBase + 0x1068D;
+		int onKillHookLength = 5;
+
+		//address in real function to jump back to after our code
+		onKillJmpBackAddr = onKillAddress + onKillHookLength;
+		if (hook((void*)onKillAddress, onKill, onKillHookLength))
+		{
+			std::cout << "[+] Works\n";
+		}
+	}
+
   //This teleports to popular places in the game world
 	else if (!tokens.empty() && tokens[0] == "tp") {
 		if (tokens.size() == 4) {

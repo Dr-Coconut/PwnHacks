@@ -25,6 +25,7 @@ DWORD WINAPI HackThread(HMODULE hModule)
 	std::cout << "      'infinite ammo'       : Infinite Ammo                 [ON/OFF]\n";
 	std::cout << "      'infinite coins'      : Infinite Coins/Items          [ON/OFF]\n";
 	std::cout << "      'infinite jump'       : Jump in the air               [ON/OFF]\n";
+	std::cout << "      'battle               : SECRET!!!                     [ON/OFF]\n";
 	std::cout << "      'speed'               : Speed Hack                    [ON/OFF]\n";
 	std::cout << "      'zero dmg'            : Zero Damage(infinite health)  [ON/OFF]\n";
 	std::cout << "      'zero cd'             : Zero Cooldown(spells)         [ON/OFF]\n";
